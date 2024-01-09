@@ -6,7 +6,7 @@
  */
 
 import React from 'react';
-import type {PropsWithChildren} from 'react';
+import type {PropsWithChildren, ReactElement} from 'react';
 import {
   Button,
   SafeAreaView,
@@ -27,18 +27,40 @@ import {
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
 
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
+import GetLocation from 'react-native-get-location'
 
-class IntersectionProp {
-  road0: string = ''
-  road1: string = ''
-  longitude: number = 0
-  latitude: number = 0
+GetLocation.getCurrentPosition({
+    enableHighAccuracy: true,
+    timeout: 60000,
+})
+.then(location => {
+    console.log(location);
+})
+.catch(error => {
+    const { code, message } = error;
+    console.warn('hi')
+    console.log(error);
+    console.warn('check')
+})
+
+type Phase = {
+  start: Date; // start time for this light pattern
+  end: Date; // end time for this light pattern
+  redLightDurationSeconds: number;
+  greenLightDurationSeconds: number; // includes yellow light time
+  direction: number;
 }
 
-function Section({children, title}: SectionProps): JSX.Element {
+type Light = {
+  title: string;
+  phases: Phase[];
+}
+
+type LightProps = PropsWithChildren<{
+  light: Light;
+}>;
+
+function Light({children, light}: LightProps): JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
   return (
     <View style={styles.sectionContainer}>
@@ -49,54 +71,20 @@ function Section({children, title}: SectionProps): JSX.Element {
             color: isDarkMode ? Colors.white : Colors.black,
           },
         ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
+        {light.title}
+          </Text>
+      <View style={styles.circle}><Text>29</Text></View>
+      <Text>hi</Text>
     </View>
   );
 }
 
-class Counter extends React.Component {
-  constructor(props: any) {
-    super(props)
-    this.state = {
-      count: 0,
-      intersections: [1, 2, 3, 6]
-    }
+
+function App(): ReactElement {
+
+  function componentDidMount() {
+    console.log('mounted')
   }
-
-  intersectionsRendered = (<Text>Yaadfy</Text>)
-  data =[{"name":"test1"},{"name":"test2"}];
-  listItems = this.data.map((d) => <Text key={d.name}>{d.name}</Text>);
-
-  interval = null;
-  componentDidMount(): void {
-    this.interval = setInterval(() => this.setState({count: this.state.count + 2}), 1000)
-  }
-
-  componentWillUnmount(): void {
-    clearInterval(this.interval)
-  }
-
-  render() {
-    return (
-      <View>
-        <Section title="component">Hello Katie: {this.state.count}</Section>
-        {this.listItems}
-      </View>
-    )
-  }
-}
-
-function App(): JSX.Element {
 
   const isDarkMode = useColorScheme() === 'dark';
 
@@ -111,6 +99,15 @@ function App(): JSX.Element {
 
   }
 
+  let debug = 'its here';
+
+  let lights: Light[] = [
+    {
+      title: 'John R. Road X 17 Mile',
+      phases: [],
+    }
+  ];
+  let lightElements = lights.map(light => <Light light={light} key={light.title}></Light>)
   return (
     <SafeAreaView style={backgroundStyle}>
       <StatusBar
@@ -125,32 +122,9 @@ function App(): JSX.Element {
           style={{
             backgroundColor: isDarkMode ? Colors.black : Colors.white,
           }}>
-          <Counter></Counter>
-          <Section title="John R. Road X 16 Mile">
-           16 seconds until red
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <Section title="Another one">
-            Yes {count}
-          </Section>
-          <TextInput
-            style={{
-              height: 40,
-              borderColor: 'gray',
-              borderWidth: 1,
-            }}
-            defaultValue="You can type in me"
-          />
-          <Button title='Heyo' onPress={increaseCount}></Button>
-          
+          {/* <Light title="John R. Road X 16 Mile" phases={[]}></Light> */}
+          {lightElements}
+          <Text>{debug}</Text>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -174,6 +148,12 @@ const styles = StyleSheet.create({
   highlight: {
     fontWeight: '700',
   },
+  circle: {
+    width: 100,
+    height: 100,
+    borderRadius: 100/2,
+    backgroundColor: "red"
+  }
 });
 
 export default App;
